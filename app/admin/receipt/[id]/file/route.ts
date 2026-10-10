@@ -42,13 +42,10 @@ export async function GET(req: NextRequest, ctx: RouteContext<"/admin/receipt/[i
     `receipt-${regId}${isPdf ? ".pdf" : ""}`;
   const disposition = `${dispositionType}; filename="${asciiName}"; filename*=UTF-8''${encodeURIComponent(payload.fileName)}`;
 
-  // Copy into a standalone ArrayBuffer so Node Buffer pool slices can't empty the body.
-  const copy = payload.bytes.buffer.slice(
-    payload.bytes.byteOffset,
-    payload.bytes.byteOffset + payload.bytes.byteLength,
-  );
+  // Copy into a standalone Uint8Array (BodyInit) — Buffer.buffer.slice() can be SharedArrayBuffer.
+  const body = Uint8Array.from(payload.bytes);
 
-  return new NextResponse(copy, {
+  return new NextResponse(body, {
     status: 200,
     headers: {
       "Content-Type": mime,
