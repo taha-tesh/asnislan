@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+/* Palette taken from the header artwork: deep navy badge, rose pinks, gold "17", palm green, cream. */
+:root {
+  --navy: #1d1f3b;
+  --navy-deep: #12132a;
+  --navy-soft: #2b2e5a;
+  --rose: #e4559a;
+  --rose-light: #f7b9d6;
+  --rose-pale: #fdeef5;
+  --gold: #f0a328;
+  --gold-light: #ffd27a;
+  --leaf: #3f9a5a;
+  --leaf-light: #c9e8cf;
+  --cream: #fff9fb;
+  --ink: #1d1f3b;
+  --muted: #6b6e8a;
+}
+
+@theme inline {
+  --color-navy: var(--navy);
+  --color-navy-deep: var(--navy-deep);
+  --color-navy-soft: var(--navy-soft);
+  --color-rose: var(--rose);
+  --color-rose-light: var(--rose-light);
+  --color-rose-pale: var(--rose-pale);
+  --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
+  --color-leaf: var(--leaf);
+  --color-leaf-light: var(--leaf-light);
+  --color-cream: var(--cream);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --font-sans: var(--font-cairo), "Segoe UI", Tahoma, sans-serif;
+}
+
+html {
+  font-family: var(--font-sans);
+}
+
+body {
+  color: var(--ink);
+  background:
+    radial-gradient(1100px 500px at 100% -10%, rgba(228, 85, 154, 0.12), transparent 60%),
+    radial-gradient(900px 500px at 0% 110%, rgba(63, 154, 90, 0.12), transparent 60%),
+    var(--cream);
+  min-height: 100dvh;
+}
+
+/* Form controls */
+.field-label {
+  @apply block text-sm font-bold text-navy mb-1.5;
+}
+.field-input {
+  @apply w-full rounded-xl border border-rose-light/70 bg-white px-4 py-3 text-base text-ink
+         placeholder:text-muted/60 shadow-sm transition
+         focus:outline-none focus:ring-4 focus:ring-rose/20 focus:border-rose;
+}
+.field-input[aria-invalid="true"] {
+  @apply border-red-400 focus:ring-red-200 focus:border-red-500;
+}
+.field-error {
+  @apply mt-1.5 text-sm text-red-600;
+}
+.field-hint {
+  @apply mt-1.5 text-xs text-muted;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl bg-navy px-6 py-3.5 text-base font-bold text-white
+         shadow-lg shadow-navy/20 transition hover:bg-navy-soft focus:outline-none focus:ring-4 focus:ring-navy/30
+         disabled:opacity-60 disabled:cursor-not-allowed;
+}
+.btn-gold {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl bg-gold px-5 py-2.5 text-sm font-bold text-navy
+         shadow-md shadow-gold/30 transition hover:bg-gold-light focus:outline-none focus:ring-4 focus:ring-gold/30;
+}
+.btn-ghost {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl border border-navy/15 bg-white px-4 py-2.5 text-sm font-bold text-navy
+         transition hover:bg-rose-pale focus:outline-none focus:ring-4 focus:ring-rose/20;
+}
+
+.card {
+  @apply rounded-2xl bg-white/90 backdrop-blur shadow-xl shadow-navy/5 border border-white;
+}
+
+/* Number inputs keep LTR digits inside an RTL page */
+input[type="date"],
+input[type="tel"],
+.ltr {
+  direction: ltr;
+  text-align: right;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-up {
+  animation: fade-up 0.35s ease-out both;
+}
