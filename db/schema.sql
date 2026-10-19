@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS asnislan_registrations (
   wedding_year      SMALLINT    NOT NULL CHECK (wedding_year BETWEEN 2026 AND 2027),
   phone             TEXT        NOT NULL,                 -- رقم الهاتف (الواتساب)
   blood_type        TEXT        NOT NULL CHECK (blood_type IN ('A+','A-','B+','B-','AB+','AB-','O+','O-')),
-  payment_method    TEXT        NOT NULL CHECK (payment_method IN ('baridimob','dahabia')),
+  payment_method    TEXT        NOT NULL CHECK (payment_method IN ('baridimob','dahabia','cash')),
   payment_status    TEXT        NOT NULL DEFAULT 'pending' CHECK (payment_status IN ('pending','paid','rejected')),
   amount_dzd        INTEGER     NOT NULL DEFAULT 3000,
   card_holder       TEXT,                                 -- only for dahabia
@@ -19,6 +19,8 @@ CREATE TABLE IF NOT EXISTS asnislan_registrations (
   payment_reference TEXT,                                 -- gateway / transaction reference
   admin_note        TEXT,
   badge_token       TEXT        NOT NULL UNIQUE DEFAULT replace(gen_random_uuid()::text, '-', ''), -- encoded in the badge QR code
+  attended_at       TIMESTAMPTZ,                          -- set when QR is scanned (or admin marks present)
+  created_by_admin  BOOLEAN     NOT NULL DEFAULT false,   -- walk-in registrations (cash)
   created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
   CONSTRAINT asnislan_wedding_range CHECK (
@@ -33,8 +35,30 @@ ALTER TABLE asnislan_registrations
 UPDATE asnislan_registrations SET badge_token = replace(gen_random_uuid()::text, '-', '') WHERE badge_token IS NULL;
 ALTER TABLE asnislan_registrations ALTER COLUMN badge_token SET NOT NULL;
 
+-- Attendance + admin walk-in (cash)
+ALTER TABLE asnislan_registrations
+  ADD COLUMN IF NOT EXISTS attended_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS created_by_admin BOOLEAN NOT NULL DEFAULT false;
+
+DO $$
+DECLARE cname text;
+BEGIN
+  SELECT conname INTO cname
+  FROM pg_constraint
+  WHERE conrelid = 'asnislan_registrations'::regclass
+    AND contype = 'c'
+    AND pg_get_constraintdef(oid) ILIKE '%payment_method%';
+  IF cname IS NOT NULL THEN
+    EXECUTE format('ALTER TABLE asnislan_registrations DROP CONSTRAINT %I', cname);
+  END IF;
+  ALTER TABLE asnislan_registrations
+    ADD CONSTRAINT asnislan_registrations_payment_method_check
+    CHECK (payment_method IN ('baridimob', 'dahabia', 'cash'));
+END $$;
+
 CREATE INDEX IF NOT EXISTS asnislan_registrations_created_at_idx ON asnislan_registrations (created_at DESC);
 CREATE INDEX IF NOT EXISTS asnislan_registrations_phone_idx      ON asnislan_registrations (phone);
+CREATE INDEX IF NOT EXISTS asnislan_registrations_attended_at_idx ON asnislan_registrations (attended_at DESC NULLS LAST);
 
 -- وصل التحويل (بريدي موب) — يُرفع إلى Cloudinary؛ تُحفظ البيانات الوصفية + الرابط هنا
 CREATE TABLE IF NOT EXISTS asnislan_receipts (

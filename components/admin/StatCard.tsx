@@ -7,9 +7,9 @@ const tones = {
 
 export function StatCard({ label, value, tone }: { label: string; value: string | number; tone: keyof typeof tones }) {
   return (
-    <div className={`rounded-2xl bg-gradient-to-br p-4 shadow-lg shadow-navy/10 ${tones[tone]}`}>
-      <p className="text-xs opacity-80">{label}</p>
-      <p className="mt-1 text-2xl font-extrabold tabular-nums">{value}</p>
+    <div className={`rounded-2xl bg-gradient-to-br p-3 shadow-lg shadow-navy/10 sm:p-4 ${tones[tone]}`}>
+      <p className="text-[11px] leading-tight opacity-80 sm:text-xs">{label}</p>
+      <p className="mt-1 text-lg font-extrabold tabular-nums sm:text-2xl">{value}</p>
     </div>
   );
 }

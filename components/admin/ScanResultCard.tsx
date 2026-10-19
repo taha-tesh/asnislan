@@ -11,8 +11,10 @@ const statusTheme: Record<PaymentStatus, { bg: string; text: string; icon: strin
   rejected: { bg: "bg-red-600", text: "text-white", icon: "⛔", title: "الدفع مرفوض" },
 };
 
-export function ScanResultCard({ r }: { r: Registration }) {
+export function ScanResultCard({ r, firstTime }: { r: Registration; firstTime: boolean }) {
   const t = statusTheme[r.payment_status];
+  const present = Boolean(r.attended_at);
+
   return (
     <div className="fade-up overflow-hidden rounded-2xl border border-navy/10 bg-white shadow-xl shadow-navy/10">
       <div className={`flex items-center gap-3 px-5 py-4 ${t.bg} ${t.text}`}>
@@ -27,12 +29,27 @@ export function ScanResultCard({ r }: { r: Registration }) {
         </div>
       </div>
 
+      <div
+        className={`flex items-center gap-3 border-b border-navy/5 px-5 py-3 text-sm font-bold ${
+          present ? "bg-leaf-light text-leaf" : "bg-rose-pale text-navy"
+        }`}
+      >
+        <span aria-hidden>{present ? "✅" : "👤"}</span>
+        <span>
+          {present
+            ? firstTime
+              ? "تم تسجيل الحضور الآن"
+              : "المشارك مسجّل حاضراً مسبقاً"
+            : "لم يُسجَّل الحضور"}
+        </span>
+      </div>
+
       <div className="px-5 py-4">
         <p className="text-2xl font-extrabold text-navy">{r.full_name}</p>
         <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-3">
           <div>
             <dt className="text-muted">تاريخ الميلاد</dt>
-            <dd className="font-bold ltr text-right">{formatBirthDate(r.birth_date)}</dd>
+            <dd className="ltr text-right font-bold">{formatBirthDate(r.birth_date)}</dd>
           </div>
           <div>
             <dt className="text-muted">القصر</dt>
@@ -56,7 +73,7 @@ export function ScanResultCard({ r }: { r: Registration }) {
           </div>
           <div>
             <dt className="text-muted">فصيلة الدم</dt>
-            <dd className="font-bold ltr text-right">{r.blood_type}</dd>
+            <dd className="ltr text-right font-bold">{r.blood_type}</dd>
           </div>
           <div>
             <dt className="text-muted">طريقة الدفع</dt>
@@ -69,7 +86,7 @@ export function ScanResultCard({ r }: { r: Registration }) {
           {r.payment_reference ? (
             <div>
               <dt className="text-muted">مرجع الدفع</dt>
-              <dd className="font-mono text-xs font-bold ltr text-right">{r.payment_reference}</dd>
+              <dd className="ltr text-right font-mono text-xs font-bold">{r.payment_reference}</dd>
             </div>
           ) : null}
         </dl>

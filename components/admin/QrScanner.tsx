@@ -136,7 +136,7 @@ export function QrScanner({ initial }: { initial: LookupResult | null }) {
 
       {!pending && result ? (
         result.ok ? (
-          <ScanResultCard r={result.registration} />
+          <ScanResultCard r={result.registration} firstTime={result.firstTime} />
         ) : (
           <div className="fade-up flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-red-700" role="alert">
             <span className="text-3xl" aria-hidden>

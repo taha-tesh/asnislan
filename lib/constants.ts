@@ -15,6 +15,7 @@ export type BloodType = (typeof BLOOD_TYPES)[number];
 export const PAYMENT_METHODS = {
   baridimob: "بريدي موب (تحويل بنكي)",
   dahabia: "البطاقة الذهبية / CIB",
+  cash: "نقداً",
 } as const;
 export type PaymentMethod = keyof typeof PAYMENT_METHODS;
 

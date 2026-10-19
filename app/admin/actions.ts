@@ -3,9 +3,17 @@
 import { redirect } from "next/navigation";
 import { refresh } from "next/cache";
 import { checkPassword, clearAdminSession, isAdmin, setAdminSession } from "@/lib/auth";
-import { PAYMENT_STATUS, type PaymentStatus } from "@/lib/constants";
+import { EVENT, PAYMENT_STATUS, type PaymentStatus } from "@/lib/constants";
 import { parseBadgeToken } from "@/lib/badge";
-import { deleteRegistration, getRegistrationByToken, updateStatus, type Registration } from "@/lib/registrations";
+import {
+  createAdminRegistration,
+  deleteRegistration,
+  markPresentByToken,
+  setAttendance,
+  updateStatus,
+  type Registration,
+} from "@/lib/registrations";
+import { parseRegistration, type FieldErrors } from "@/lib/validation";
 
 export type LoginState = { error?: string };
 
@@ -36,15 +44,27 @@ export async function setPaymentStatus(formData: FormData) {
   refresh();
 }
 
-export type LookupResult = { ok: true; registration: Registration } | { ok: false; message: string };
+export async function setAttendanceStatus(formData: FormData) {
+  await requireAdmin();
+  const id = Number(formData.get("id"));
+  const present = String(formData.get("present")) === "1";
+  if (!Number.isInteger(id)) throw new Error("Bad request");
+  await setAttendance(id, present);
+  refresh();
+}
 
+export type LookupResult =
+  | { ok: true; registration: Registration; firstTime: boolean }
+  | { ok: false; message: string };
+
+/** Lookup badge and automatically mark the participant present. */
 export async function lookupBadge(raw: string): Promise<LookupResult> {
   await requireAdmin();
   const token = parseBadgeToken(raw);
   if (!token) return { ok: false, message: "رمز QR غير صالح أو لا ينتمي لهذه الدورة" };
-  const registration = await getRegistrationByToken(token);
-  if (!registration) return { ok: false, message: "لم يتم العثور على تسجيل مطابق لهذا الرمز" };
-  return { ok: true, registration };
+  const marked = await markPresentByToken(token);
+  if (!marked) return { ok: false, message: "لم يتم العثور على تسجيل مطابق لهذا الرمز" };
+  return { ok: true, registration: marked.registration, firstTime: marked.firstTime };
 }
 
 export async function removeRegistration(formData: FormData) {
@@ -53,4 +73,31 @@ export async function removeRegistration(formData: FormData) {
   if (!Number.isInteger(id)) throw new Error("Bad request");
   await deleteRegistration(id);
   refresh();
+}
+
+export type AdminRegisterState =
+  | { status: "idle" }
+  | { status: "error"; message?: string; errors: FieldErrors }
+  | { status: "success"; id: number; fullName: string };
+
+export async function adminRegisterWalkIn(
+  _prev: AdminRegisterState,
+  formData: FormData,
+): Promise<AdminRegisterState> {
+  await requireAdmin();
+  const { data, errors } = parseRegistration(formData);
+  if (!data) return { status: "error", errors, message: "يرجى تصحيح الحقول المشار إليها" };
+
+  try {
+    const row = await createAdminRegistration(data, EVENT.feeDzd);
+    refresh();
+    return { status: "success", id: row.id, fullName: data.fullName };
+  } catch (err) {
+    console.error("adminRegisterWalkIn failed", err);
+    return {
+      status: "error",
+      errors: {},
+      message: "تعذر حفظ التسجيل. يرجى المحاولة مرة أخرى.",
+    };
+  }
 }

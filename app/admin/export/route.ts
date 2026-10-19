@@ -10,34 +10,38 @@ export async function GET(request: NextRequest) {
   const sp = request.nextUrl.searchParams;
   const status = sp.get("status") ?? "";
   const method = sp.get("method") ?? "";
+  const attendance = sp.get("attendance") ?? "";
   const rows = await listRegistrations({
     q: (sp.get("q") ?? "").trim().slice(0, 100),
     status: status in PAYMENT_STATUS ? (status as PaymentStatus) : "",
     method: method in PAYMENT_METHODS ? (method as PaymentMethod) : "",
+    attendance: attendance === "present" || attendance === "absent" ? attendance : "",
   });
 
   const data = rows.map((r, i) => ({
-    "الرقم": i + 1,
+    الرقم: i + 1,
     "رقم التسجيل": r.id,
     "الاسم الكامل": r.full_name,
     "تاريخ الميلاد": r.birth_date,
-    "القصر": r.residence,
-    "المهنة": r.profession,
+    القصر: r.residence,
+    المهنة: r.profession,
     "تاريخ الزواج": formatWeddingDate(r.wedding_year, r.wedding_month),
     "رقم الهاتف (الواتساب)": r.phone,
     "فصيلة الدم": r.blood_type,
     "طريقة الدفع": PAYMENT_METHODS[r.payment_method],
     "حالة الدفع": PAYMENT_STATUS[r.payment_status],
     "المبلغ (دج)": r.amount_dzd,
+    الحضور: r.attended_at ? "حاضر" : "غائب",
+    "وقت الحضور": r.attended_at ? new Date(r.attended_at).toLocaleString("ar-DZ") : "",
+    "تسجيل يدوي": r.created_by_admin ? "نعم" : "لا",
     "مرجع الدفع": r.payment_reference ?? "",
-    "آخر 4 أرقام البطاقة": r.card_last4 ?? "",
     "وصل مرفق": r.has_receipt ? "نعم" : "لا",
     "ملاحظة الإدارة": r.admin_note ?? "",
     "تاريخ التسجيل": new Date(r.created_at).toLocaleString("ar-DZ"),
   }));
 
   const ws = XLSX.utils.json_to_sheet(data);
-  ws["!cols"] = [4, 10, 30, 12, 16, 16, 14, 16, 8, 22, 12, 10, 22, 12, 8, 24, 20].map((wch) => ({ wch }));
+  ws["!cols"] = [4, 10, 30, 12, 16, 16, 14, 16, 8, 18, 12, 10, 8, 18, 10, 18, 8, 20, 20].map((wch) => ({ wch }));
   if (ws["!ref"]) ws["!autofilter"] = { ref: ws["!ref"] };
 
   const wb = XLSX.utils.book_new();

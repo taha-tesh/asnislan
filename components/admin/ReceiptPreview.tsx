@@ -9,6 +9,8 @@ type Props = {
   downloadUrl: string;
   mimeType: string;
   fileName: string;
+  /** Smaller preview for embedding inside modals. */
+  compact?: boolean;
 };
 
 function base64ToUint8Array(base64: string) {
@@ -18,7 +20,7 @@ function base64ToUint8Array(base64: string) {
   return out;
 }
 
-export function ReceiptPreview({ registrationId, openUrl, downloadUrl, mimeType, fileName }: Props) {
+export function ReceiptPreview({ registrationId, openUrl, downloadUrl, mimeType, fileName, compact }: Props) {
   const routeParams = useParams<{ id: string }>();
   const resolvedId = Number.isInteger(registrationId) && registrationId > 0 ? registrationId : Number(routeParams?.id);
 
@@ -122,7 +124,7 @@ export function ReceiptPreview({ registrationId, openUrl, downloadUrl, mimeType,
         </a>
       </div>
 
-      {loading ? <div className="h-[50vh] animate-pulse rounded-2xl bg-white/10" /> : null}
+      {loading ? <div className={`animate-pulse rounded-2xl bg-white/10 ${compact ? "h-48" : "h-[50vh]"}`} /> : null}
 
       {error ? (
         <p className="rounded-xl bg-rose-pale px-4 py-6 text-center text-sm text-navy" role="alert">
@@ -138,7 +140,7 @@ export function ReceiptPreview({ registrationId, openUrl, downloadUrl, mimeType,
         <img
           src={previewUrl}
           alt={fileName}
-          className="mx-auto max-h-[80vh] w-auto max-w-full rounded-lg shadow-2xl"
+          className={`mx-auto w-auto max-w-full rounded-lg shadow-2xl ${compact ? "max-h-64" : "max-h-[80vh]"}`}
         />
       ) : null}
 
@@ -146,7 +148,7 @@ export function ReceiptPreview({ registrationId, openUrl, downloadUrl, mimeType,
         <iframe
           title={fileName}
           src={previewUrl}
-          className="h-[min(80vh,900px)] w-full rounded-lg bg-white shadow-2xl"
+          className={`w-full rounded-lg bg-white shadow-2xl ${compact ? "h-72" : "h-[min(80vh,900px)]"}`}
         />
       ) : null}
     </div>

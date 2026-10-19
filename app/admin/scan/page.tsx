@@ -3,9 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { isAdmin } from "@/lib/auth";
 import { EVENT } from "@/lib/constants";
-import { getRegistrationByToken } from "@/lib/registrations";
-import { parseBadgeToken } from "@/lib/badge";
-import { logout, type LookupResult } from "../actions";
+import { logout, lookupBadge, type LookupResult } from "../actions";
 import { QrScanner } from "@/components/admin/QrScanner";
 
 type Search = { c?: string };
@@ -16,9 +14,7 @@ async function Scanner({ searchParams }: { searchParams: Promise<Search> }) {
   const { c } = await searchParams;
   let initial: LookupResult | null = null;
   if (c) {
-    const token = parseBadgeToken(c);
-    const registration = token ? await getRegistrationByToken(token) : null;
-    initial = registration ? { ok: true, registration } : { ok: false, message: "لم يتم العثور على تسجيل مطابق لهذا الرمز" };
+    initial = await lookupBadge(c);
   }
   return <QrScanner initial={initial} />;
 }
