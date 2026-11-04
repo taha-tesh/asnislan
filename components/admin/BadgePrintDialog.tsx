@@ -38,6 +38,7 @@ export function BadgePrintDialog({
 
   useEffect(() => {
     if (!pagesEl) return;
+    const pages = pagesEl;
     let cancelled = false;
     setReady(false);
 
@@ -45,7 +46,7 @@ export function BadgePrintDialog({
       await document.fonts?.ready;
       const start = Date.now();
       while (!cancelled && Date.now() - start < 10000) {
-        const imgs = [...pagesEl.querySelectorAll("img")];
+        const imgs = [...pages.querySelectorAll("img")];
         if (imgs.length >= rows.length && imgs.every((img) => img.complete && img.naturalWidth > 0)) break;
         await new Promise((r) => setTimeout(r, 120));
       }
