@@ -44,8 +44,10 @@ const SELECT = `
   SELECT r.id::int AS id, r.full_name, to_char(r.birth_date, 'YYYY-MM-DD') AS birth_date, r.residence, r.profession,
          r.wedding_month, r.wedding_year, r.phone, r.blood_type, r.payment_method, r.payment_status,
          r.amount_dzd, r.card_holder, r.card_last4, r.payment_reference, r.admin_note, r.badge_token,
-         r.attended_at::text AS attended_at, r.created_by_admin,
-         r.created_at::text AS created_at, r.updated_at::text AS updated_at,
+         to_char(r.attended_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS attended_at,
+         r.created_by_admin,
+         to_char(r.created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS created_at,
+         to_char(r.updated_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS updated_at,
          (rc.id IS NOT NULL) AS has_receipt, rc.file_name AS receipt_name
   FROM asnislan_registrations r
   LEFT JOIN asnislan_receipts rc ON rc.registration_id = r.id

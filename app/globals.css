@@ -99,3 +99,66 @@ input[type="tel"],
 .fade-up {
   animation: fade-up 0.35s ease-out both;
 }
+
+.badge-print-pages {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 1.25rem;
+}
+
+.badge-sheet {
+  background: white;
+}
+
+@page badge-a6 {
+  size: A6 portrait;
+  margin: 0;
+}
+
+@media print {
+  body.printing-badges > *:not(.badge-print-root) {
+    display: none !important;
+  }
+
+  body.printing-badges .badge-print-root {
+    position: static !important;
+    display: block !important;
+    background: white !important;
+    inset: auto !important;
+  }
+
+  body.printing-badges .no-print {
+    display: none !important;
+  }
+
+  body.printing-badges .badge-print-pages {
+    display: block;
+    overflow: visible;
+    padding: 0;
+    margin: 0;
+  }
+
+  body.printing-badges .badge-sheet {
+    page: badge-a6;
+    display: flex;
+    width: 105mm;
+    height: 148mm;
+    align-items: flex-start;
+    justify-content: center;
+    overflow: hidden;
+    break-after: page;
+    page-break-after: always;
+  }
+
+  body.printing-badges .badge-sheet:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+
+  body.printing-badges .badge-scale {
+    transform: scale(calc(105mm / 340px));
+    transform-origin: top center;
+  }
+}

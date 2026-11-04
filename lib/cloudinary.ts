@@ -63,14 +63,14 @@ export function privateReceiptDownloadUrl(
   });
 }
 
-/** Upload a BaridiMob receipt (image or PDF) to Cloudinary under asnislan17/receipts. */
+/** Upload a BaridiMob receipt (image or PDF) to Cloudinary under asnislan18/receipts. */
 export async function uploadReceipt(file: File, registrationId: number): Promise<UploadedReceipt> {
   ensureConfigured();
 
   const buffer = Buffer.from(await file.arrayBuffer());
   const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);
   const resourceType: "image" | "raw" = isPdf || file.type.startsWith("image/") ? "image" : "raw";
-  const publicId = `asnislan17/receipts/reg-${registrationId}-${Date.now()}`;
+  const publicId = `asnislan18/receipts/reg-${registrationId}-${Date.now()}`;
 
   const result = await new Promise<UploadApiResponse>((resolve, reject) => {
     cloudinary.uploader

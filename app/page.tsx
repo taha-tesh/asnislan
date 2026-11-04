@@ -8,7 +8,7 @@ export default function HomePage() {
     <>
       <SiteHeader />
 
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-10 pt-6 sm:px-6">
+      <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-10 pt-4 sm:px-6">
         <section className="card overflow-hidden">
           <div className="bg-gradient-to-l from-navy via-navy-soft to-navy px-5 py-6 text-center text-white sm:px-8">
             <p className="text-sm font-bold text-gold-light">{EVENT.edition}</p>
@@ -29,8 +29,26 @@ export default function HomePage() {
 
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="rounded-2xl bg-rose-pale px-4 py-3">
+                <p className="text-xs text-muted">تاريخ الدورة</p>
+                <p className="mt-1 text-base font-extrabold text-navy">{EVENT.schedule}</p>
+              </div>
+              <div className="rounded-2xl bg-rose-pale px-4 py-3">
+                <p className="text-xs text-muted">مكان الدورة</p>
+                <p className="mt-1 text-base font-extrabold text-navy">{EVENT.place}</p>
+              </div>
+              <div className="rounded-2xl bg-gold/15 px-4 py-3 sm:col-span-2">
+                <p className="text-xs text-muted">للاستفسار</p>
+                <p className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-base font-extrabold text-navy">
+                  {EVENT.inquiryPhones.map((phone) => (
+                    <a key={phone.tel} href={`tel:${phone.tel}`} className="ltr hover:text-rose">
+                      {phone.display}
+                    </a>
+                  ))}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-rose-pale px-4 py-3">
                 <p className="text-xs text-muted">الرقم الخاص بالدفع عن بعد (بريدي موب)</p>
-                <p className="ltr mt-1 font-mono text-base font-extrabold text-navy break-all">{EVENT.baridimobNumber}</p>
+                <p className="ltr mt-1 break-all font-mono text-base font-extrabold text-navy">{EVENT.baridimobNumber}</p>
               </div>
               <div className="rounded-2xl bg-leaf-light/60 px-4 py-3">
                 <p className="text-xs text-muted">اشتراك الدورة</p>

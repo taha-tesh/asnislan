@@ -2,6 +2,7 @@ import * as XLSX from "xlsx";
 import type { NextRequest } from "next/server";
 import { isAdmin } from "@/lib/auth";
 import { PAYMENT_METHODS, PAYMENT_STATUS, formatWeddingDate, type PaymentMethod, type PaymentStatus } from "@/lib/constants";
+import { formatDateTime } from "@/lib/badge";
 import { listRegistrations } from "@/lib/registrations";
 
 export async function GET(request: NextRequest) {
@@ -32,12 +33,12 @@ export async function GET(request: NextRequest) {
     "حالة الدفع": PAYMENT_STATUS[r.payment_status],
     "المبلغ (دج)": r.amount_dzd,
     الحضور: r.attended_at ? "حاضر" : "غائب",
-    "وقت الحضور": r.attended_at ? new Date(r.attended_at).toLocaleString("ar-DZ") : "",
+    "وقت الحضور": r.attended_at ? formatDateTime(r.attended_at) : "",
     "تسجيل يدوي": r.created_by_admin ? "نعم" : "لا",
     "مرجع الدفع": r.payment_reference ?? "",
     "وصل مرفق": r.has_receipt ? "نعم" : "لا",
     "ملاحظة الإدارة": r.admin_note ?? "",
-    "تاريخ التسجيل": new Date(r.created_at).toLocaleString("ar-DZ"),
+    "تاريخ التسجيل": formatDateTime(r.created_at),
   }));
 
   const ws = XLSX.utils.json_to_sheet(data);
@@ -54,7 +55,7 @@ export async function GET(request: NextRequest) {
   return new Response(new Uint8Array(buf), {
     headers: {
       "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "Content-Disposition": `attachment; filename="asnislan17-registrations-${date}.xlsx"; filename*=UTF-8''${encodeURIComponent(`تسجيلات-آس-نيسلان-17-${date}.xlsx`)}`,
+      "Content-Disposition": `attachment; filename="asnislan18-registrations-${date}.xlsx"; filename*=UTF-8''${encodeURIComponent(`تسجيلات-آس-نيسلان-18-${date}.xlsx`)}`,
       "Cache-Control": "no-store",
     },
   });

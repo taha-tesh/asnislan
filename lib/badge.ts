@@ -18,6 +18,18 @@ export function parseBadgeToken(raw: string): string | null {
   return null;
 }
 
+/** Registration timestamps, always in Algeria time so server and browser match. */
+export function formatDateTime(value: string) {
+  const normalized = /^\d{4}-\d{2}-\d{2} /.test(value) ? value.replace(" ", "T") : value;
+  const date = new Date(normalized);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("ar-DZ", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Africa/Algiers",
+  }).format(date);
+}
+
 /** YYYY-MM-DD → DD/MM/YYYY */
 export function formatBirthDate(iso: string) {
   const [y, m, d] = iso.split("-");

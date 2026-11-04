@@ -16,7 +16,7 @@ async function Scanner({ searchParams }: { searchParams: Promise<Search> }) {
   if (c) {
     initial = await lookupBadge(c);
   }
-  return <QrScanner initial={initial} />;
+  return <QrScanner initial={initial} initialCode={c} />;
 }
 
 export default function AdminScanPage({ searchParams }: PageProps<"/admin/scan">) {

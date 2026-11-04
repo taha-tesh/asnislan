@@ -2,8 +2,10 @@
 
 import { useEffect, useId, useState } from "react";
 import { PAYMENT_METHODS, PAYMENT_STATUS, formatWeddingDate } from "@/lib/constants";
+import { formatDateTime } from "@/lib/badge";
 import type { Registration } from "@/lib/registrations";
 import { removeRegistration, setAttendanceStatus, setPaymentStatus } from "@/app/admin/actions";
+import { BadgePrintDialog } from "./BadgePrintDialog";
 import { ModalPortal } from "./ModalPortal";
 import { ReceiptPreview } from "./ReceiptPreview";
 
@@ -14,8 +16,17 @@ const statusClass: Record<Registration["payment_status"], string> = {
 };
 
 function fmtDate(iso: string) {
-  const d = new Date(iso);
-  return d.toLocaleString("ar-DZ", { dateStyle: "medium", timeStyle: "short" });
+  return formatDateTime(iso);
+}
+
+function PdfIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M7 3.75h7.2L19 8.4V20.25H7A1.75 1.75 0 0 1 5.25 18.5V5.5A1.75 1.75 0 0 1 7 3.75Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M14 3.75V8.5h5.25" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 13.25h7.5M8.25 16.25h5" />
+    </svg>
+  );
 }
 
 function StatusBadge({ status }: { status: Registration["payment_status"] }) {
@@ -33,10 +44,13 @@ function AttendanceBadge({ attendedAt }: { attendedAt: string | null }) {
   return <span className="inline-block rounded-full bg-navy/5 px-2.5 py-0.5 text-xs font-bold text-muted">غائب</span>;
 }
 
-function DetailActions({ r }: { r: Registration }) {
+function DetailActions({ r, onPrint }: { r: Registration; onPrint: () => void }) {
   const present = Boolean(r.attended_at);
   return (
     <div className="flex flex-wrap gap-2">
+      <button type="button" onClick={onPrint} className="rounded-xl bg-gold px-3 py-2 text-sm font-bold text-navy hover:bg-gold-light">
+        طباعة البطاقة
+      </button>
       <form action={setAttendanceStatus}>
         <input type="hidden" name="id" value={r.id} />
         <input type="hidden" name="present" value={present ? "0" : "1"} />
@@ -86,7 +100,7 @@ function DetailActions({ r }: { r: Registration }) {
   );
 }
 
-function RegistrationDetailModal({ r, onClose }: { r: Registration; onClose: () => void }) {
+function RegistrationDetailModal({ r, onClose, onPrint }: { r: Registration; onClose: () => void; onPrint: () => void }) {
   const titleId = useId();
   const fileUrl = `/admin/receipt/${r.id}/file`;
 
@@ -210,7 +224,7 @@ function RegistrationDetailModal({ r, onClose }: { r: Registration; onClose: () 
 
           <div className="mt-5 border-t border-navy/10 pt-4">
             <p className="mb-3 text-sm font-extrabold text-navy">الإجراءات</p>
-            <DetailActions r={r} />
+            <DetailActions r={r} onPrint={onPrint} />
           </div>
 
           <div className="mt-5 border-t border-navy/10 pt-4">
@@ -239,7 +253,25 @@ function RegistrationDetailModal({ r, onClose }: { r: Registration; onClose: () 
 
 export function RegistrationsTable({ rows }: { rows: Registration[] }) {
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [checked, setChecked] = useState<Set<number>>(new Set());
+  const [printRows, setPrintRows] = useState<Registration[] | null>(null);
+  const [autoPrint, setAutoPrint] = useState(false);
   const selected = selectedId == null ? null : (rows.find((r) => r.id === selectedId) ?? null);
+  const allChecked = rows.length > 0 && rows.every((r) => checked.has(r.id));
+  const checkedRows = rows.filter((r) => checked.has(r.id));
+
+  function toggle(id: number) {
+    setChecked((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleAll() {
+    setChecked(allChecked ? new Set() : new Set(rows.map((r) => r.id)));
+  }
 
   if (rows.length === 0) {
     return <p className="rounded-2xl bg-rose-pale px-4 py-10 text-center text-muted">لا توجد تسجيلات مطابقة.</p>;
@@ -247,10 +279,46 @@ export function RegistrationsTable({ rows }: { rows: Registration[] }) {
 
   return (
     <>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs text-muted">حدد المشاركين ثم اطبع البطاقات أو احفظها PDF على ورق A6</p>
+        <button
+          type="button"
+          disabled={checkedRows.length === 0}
+          onClick={() => {
+            setAutoPrint(true);
+            setPrintRows(checkedRows);
+          }}
+          className="btn-gold disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          طباعة المحدد ({checkedRows.length})
+        </button>
+      </div>
+
       {/* Mobile: stacked cards */}
       <ul className="space-y-2 md:hidden">
         {rows.map((r) => (
-          <li key={r.id}>
+          <li key={r.id} className="flex items-stretch gap-2">
+            <label className="flex items-center px-1">
+              <input
+                type="checkbox"
+                checked={checked.has(r.id)}
+                onChange={() => toggle(r.id)}
+                aria-label={`تحديد ${r.full_name}`}
+                className="h-5 w-5 accent-rose"
+              />
+            </label>
+            <button
+              type="button"
+              onClick={() => {
+                setAutoPrint(false);
+                setPrintRows([r]);
+              }}
+              className="flex shrink-0 items-center justify-center rounded-2xl border border-navy/10 bg-white px-3 text-rose shadow-sm hover:border-gold/50 hover:bg-gold/10"
+              aria-label={`عرض بطاقة ${r.full_name}`}
+              title="عرض البطاقة"
+            >
+              <PdfIcon />
+            </button>
             <button
               type="button"
               onClick={() => setSelectedId(r.id)}
@@ -280,8 +348,17 @@ export function RegistrationsTable({ rows }: { rows: Registration[] }) {
         <table className="w-full min-w-[640px] text-sm">
           <thead className="bg-navy text-right text-xs text-white">
             <tr>
-              {["الاسم الكامل", "الهاتف", "الحالة", "الحضور", "تاريخ التسجيل"].map((h) => (
-                <th key={h} className="whitespace-nowrap px-3 py-3 font-bold first:pr-4 last:pl-4">
+              <th className="w-10 px-3 py-3">
+                <input
+                  type="checkbox"
+                  checked={allChecked}
+                  onChange={toggleAll}
+                  aria-label="تحديد كل المشاركين"
+                  className="h-4 w-4 accent-gold"
+                />
+              </th>
+              {["الاسم الكامل", "الهاتف", "الحالة", "الحضور", "تاريخ التسجيل", "البطاقة"].map((h) => (
+                <th key={h} className="whitespace-nowrap px-3 py-3 font-bold last:pl-4">
                   {h}
                 </th>
               ))}
@@ -292,17 +369,22 @@ export function RegistrationsTable({ rows }: { rows: Registration[] }) {
               <tr
                 key={r.id}
                 tabIndex={0}
-                role="button"
                 onClick={() => setSelectedId(r.id)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    setSelectedId(r.id);
-                  }
+                  if (e.key === "Enter") setSelectedId(r.id);
                 }}
                 className="cursor-pointer odd:bg-white even:bg-rose-pale/40 hover:bg-gold/15 focus:bg-gold/20 focus:outline-none"
               >
-                <td className="px-3 py-3 font-bold text-navy first:pr-4">
+                <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    checked={checked.has(r.id)}
+                    onChange={() => toggle(r.id)}
+                    aria-label={`تحديد ${r.full_name}`}
+                    className="h-4 w-4 accent-rose"
+                  />
+                </td>
+                <td className="px-3 py-3 font-bold text-navy">
                   <span className="line-clamp-1">{r.full_name}</span>
                   {r.created_by_admin ? <span className="mr-1 text-[10px] font-bold text-gold">يدوي</span> : null}
                 </td>
@@ -315,7 +397,21 @@ export function RegistrationsTable({ rows }: { rows: Registration[] }) {
                 <td className="px-3 py-3">
                   <AttendanceBadge attendedAt={r.attended_at} />
                 </td>
-                <td className="whitespace-nowrap px-3 py-3 text-xs text-muted last:pl-4">{fmtDate(r.created_at)}</td>
+                <td className="whitespace-nowrap px-3 py-3 text-xs text-muted">{fmtDate(r.created_at)}</td>
+                <td className="px-3 py-3 last:pl-4" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAutoPrint(false);
+                      setPrintRows([r]);
+                    }}
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-rose hover:bg-rose/10"
+                    aria-label={`عرض بطاقة ${r.full_name}`}
+                    title="عرض البطاقة"
+                  >
+                    <PdfIcon />
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -324,7 +420,19 @@ export function RegistrationsTable({ rows }: { rows: Registration[] }) {
 
       <p className="mt-2 text-center text-xs text-muted">اضغط على أي صف لعرض التفاصيل والإجراءات والوصل</p>
 
-      {selected ? <RegistrationDetailModal r={selected} onClose={() => setSelectedId(null)} /> : null}
+      {selected ? (
+        <RegistrationDetailModal
+          r={selected}
+          onClose={() => setSelectedId(null)}
+          onPrint={() => {
+            setAutoPrint(true);
+            setPrintRows([selected]);
+          }}
+        />
+      ) : null}
+      {printRows ? (
+        <BadgePrintDialog rows={printRows} autoPrint={autoPrint} onClose={() => setPrintRows(null)} />
+      ) : null}
     </>
   );
 }

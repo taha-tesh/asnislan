@@ -1,4 +1,4 @@
--- جداول تسجيل دورة المقبلين على الزواج - آس نيسلان الطبعة 17
+-- جداول تسجيل دورة المقبلين على الزواج - آس نيسلان الطبعة 18
 -- Tables are prefixed with "asnislan_" because the database is shared with other apps.
 
 CREATE TABLE IF NOT EXISTS asnislan_registrations (

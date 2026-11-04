@@ -1,12 +1,18 @@
 export const EVENT = {
   title: "دورة المقبلين على الزواج",
-  edition: "آس نيسلان الطبعة 17",
+  edition: "آس نيسلان الطبعة 18",
   subtitle: "استمارة خاصة بالتسجيل عن بعد",
   note: "يرجى منك أخي الفاضل تسجيل كل المعلومات بعناية. شكرا",
-  baridimobNumber: "00799999001369457264",
+  baridimobNumber: "00799999004527126297",
   feeDzd: 3000,
   feeLabel: "3000 دج",
   confirmNote: "يتم تأكيد التسجيل بدفع الاشتراك",
+  schedule: "الخميس والجمعة 3 - 4 ديسمبر 2025",
+  place: "مركب القطب بالعالية",
+  inquiryPhones: [
+    { display: "0556 71 58 71", tel: "0556715871" },
+    { display: "0667 69 63 63", tel: "0667696363" },
+  ],
 } as const;
 
 export const BLOOD_TYPES = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;

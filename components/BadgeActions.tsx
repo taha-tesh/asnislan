@@ -30,7 +30,7 @@ export function BadgeActions({ data }: { data: BadgeData }) {
       });
       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: [105, 148] });
       pdf.addImage(png, "PNG", 0, 0, 105, 148, undefined, "FAST");
-      pdf.save(`asnislan17-badge-${String(data.id).padStart(4, "0")}.pdf`);
+      pdf.save(`asnislan18-badge-${String(data.id).padStart(4, "0")}.pdf`);
     } catch (e) {
       console.error(e);
       setError("تعذر إنشاء ملف PDF. يرجى المحاولة مرة أخرى.");
