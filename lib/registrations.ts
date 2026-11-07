@@ -13,6 +13,7 @@ export type Registration = {
   wedding_month: number;
   wedding_year: number;
   phone: string;
+  whatsapp_phone: string | null;
   blood_type: BloodType;
   payment_method: PaymentMethod;
   payment_status: PaymentStatus;
@@ -42,7 +43,7 @@ export type ReceiptMeta = {
 
 const SELECT = `
   SELECT r.id::int AS id, r.full_name, to_char(r.birth_date, 'YYYY-MM-DD') AS birth_date, r.residence, r.profession,
-         r.wedding_month, r.wedding_year, r.phone, r.blood_type, r.payment_method, r.payment_status,
+         r.wedding_month, r.wedding_year, r.phone, r.whatsapp_phone, r.blood_type, r.payment_method, r.payment_status,
          r.amount_dzd, r.card_holder, r.card_last4, r.payment_reference, r.admin_note, r.badge_token,
          to_char(r.attended_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS attended_at,
          r.created_by_admin,
@@ -66,7 +67,7 @@ export async function listRegistrations(filters: ListFilters = {}) {
   const params: unknown[] = [];
   if (filters.q) {
     params.push(`%${filters.q}%`);
-    where.push(`(r.full_name ILIKE $${params.length} OR r.phone ILIKE $${params.length} OR r.residence ILIKE $${params.length} OR r.payment_reference ILIKE $${params.length})`);
+    where.push(`(r.full_name ILIKE $${params.length} OR r.phone ILIKE $${params.length} OR r.whatsapp_phone ILIKE $${params.length} OR r.residence ILIKE $${params.length} OR r.payment_reference ILIKE $${params.length})`);
   }
   if (filters.status) {
     params.push(filters.status);
@@ -169,9 +170,9 @@ export async function createAdminRegistration(data: RegistrationInput, amountDzd
   await ensureSchema();
   const { rows } = await query<{ id: number; badge_token: string }>(
     `INSERT INTO asnislan_registrations
-       (full_name, birth_date, residence, profession, wedding_month, wedding_year, phone, blood_type,
+       (full_name, birth_date, residence, profession, wedding_month, wedding_year, phone, whatsapp_phone, blood_type,
         payment_method, payment_status, amount_dzd, created_by_admin, attended_at)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'cash','paid',$9,true,now())
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'cash','paid',$10,true,now())
      RETURNING id::int AS id, badge_token`,
     [
       data.fullName,
@@ -181,6 +182,7 @@ export async function createAdminRegistration(data: RegistrationInput, amountDzd
       data.weddingMonth,
       data.weddingYear,
       data.phone,
+      data.whatsappPhone,
       data.bloodType,
       amountDzd,
     ],

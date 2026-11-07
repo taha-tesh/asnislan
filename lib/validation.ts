@@ -1,5 +1,6 @@
 import {
   BLOOD_TYPES,
+  RESIDENCES,
   RECEIPT_MAX_BYTES,
   RECEIPT_MIME_TYPES,
   isWeddingDateAllowed,
@@ -17,6 +18,7 @@ export type RegistrationInput = {
   weddingYear: number;
   weddingMonth: number;
   phone: string;
+  whatsappPhone: string;
   bloodType: BloodType;
 };
 
@@ -39,6 +41,13 @@ export function isValidAlgerianMobile(phone: string) {
   return /^0[5-7]\d{8}$/.test(phone);
 }
 
+export function parsePaymentReference(value: FormDataEntryValue | null): { value?: string; error?: string } {
+  const reference = normalizeDigits(str(value));
+  if (!reference) return { error: "يرجى إدخال رقم المعاملة الظاهر في الوصل" };
+  if (!/^\d{1,64}$/.test(reference)) return { error: "رقم المعاملة يجب أن يتكون من أرقام فقط" };
+  return { value: reference };
+}
+
 export function parseRegistration(fd: FormData): { data?: RegistrationInput; errors: FieldErrors } {
   const errors: FieldErrors = {};
 
@@ -57,8 +66,7 @@ export function parseRegistration(fd: FormData): { data?: RegistrationInput; err
   }
 
   const residence = str(fd.get("residence"));
-  if (residence.length < 2) errors.residence = "يرجى إدخال القصر";
-  else if (residence.length > 100) errors.residence = "النص طويل جداً";
+  if (!RESIDENCES.some((option) => option.value === residence)) errors.residence = "يرجى اختيار القصر من القائمة";
 
   const profession = str(fd.get("profession"));
   if (profession.length < 2) errors.profession = "يرجى إدخال المهنة";
@@ -79,6 +87,9 @@ export function parseRegistration(fd: FormData): { data?: RegistrationInput; err
   const phone = normalizePhone(str(fd.get("phone")));
   if (!isValidAlgerianMobile(phone)) errors.phone = "يرجى إدخال رقم هاتف جزائري صحيح (مثال: 0550123456)";
 
+  const whatsappPhone = normalizePhone(str(fd.get("whatsappPhone")));
+  if (!isValidAlgerianMobile(whatsappPhone)) errors.whatsappPhone = "يرجى إدخال رقم واتساب جزائري صحيح (مثال: 0550123456)";
+
   const bloodType = str(fd.get("bloodType")) as BloodType;
   if (!BLOOD_TYPES.includes(bloodType)) errors.bloodType = "يرجى اختيار فصيلة الدم";
 
@@ -91,7 +102,7 @@ export function parseRegistration(fd: FormData): { data?: RegistrationInput; err
   if (Object.keys(errors).length) return { errors };
   return {
     errors,
-    data: { fullName, birthDate, residence, profession, weddingYear, weddingMonth, phone, bloodType },
+    data: { fullName, birthDate, residence, profession, weddingYear, weddingMonth, phone, whatsappPhone, bloodType },
   };
 }
 

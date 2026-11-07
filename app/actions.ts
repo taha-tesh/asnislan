@@ -4,7 +4,7 @@ import { pool } from "@/lib/db";
 import { EVENT, formatWeddingDate } from "@/lib/constants";
 import { isCloudinaryConfigured, uploadReceipt } from "@/lib/cloudinary";
 import { ensureSchema } from "@/lib/ensure-schema";
-import { parseRegistration, validateReceipt, type FieldErrors } from "@/lib/validation";
+import { parsePaymentReference, parseRegistration, validateReceipt, type FieldErrors } from "@/lib/validation";
 
 export type SubmitState =
   | { status: "idle" }
@@ -19,9 +19,21 @@ export type SubmitState =
       weddingLabel: string;
     };
 
+function isDuplicatePaymentReferenceError(err: unknown) {
+  if (typeof err !== "object" || err === null) return false;
+  const databaseError = err as { code?: unknown; constraint?: unknown };
+  return databaseError.code === "23505" &&
+    databaseError.constraint === "asnislan_registrations_payment_reference_uidx";
+}
+
 export async function submitRegistration(_prev: SubmitState, formData: FormData): Promise<SubmitState> {
   const { data, errors } = parseRegistration(formData);
-  if (!data) return { status: "error", errors, message: "يرجى تصحيح الحقول المشار إليها" };
+  const parsedReference = parsePaymentReference(formData.get("paymentReference"));
+  if (parsedReference.error) errors.paymentReference = parsedReference.error;
+  if (!data || !parsedReference.value) {
+    return { status: "error", errors, message: "يرجى تصحيح الحقول المشار إليها" };
+  }
+  const paymentReference = parsedReference.value;
 
   if (!isCloudinaryConfigured()) {
     return {
@@ -41,9 +53,9 @@ export async function submitRegistration(_prev: SubmitState, formData: FormData)
     await client.query("BEGIN");
     const { rows } = await client.query<{ id: number; badge_token: string }>(
       `INSERT INTO asnislan_registrations
-         (full_name, birth_date, residence, profession, wedding_month, wedding_year, phone, blood_type,
-          payment_method, payment_status, amount_dzd)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'baridimob','pending',$9)
+         (full_name, birth_date, residence, profession, wedding_month, wedding_year, phone, whatsapp_phone, blood_type,
+          payment_method, payment_status, payment_reference, amount_dzd)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'baridimob','pending',$10,$11)
        RETURNING id::int AS id, badge_token`,
       [
         data.fullName,
@@ -53,7 +65,9 @@ export async function submitRegistration(_prev: SubmitState, formData: FormData)
         data.weddingMonth,
         data.weddingYear,
         data.phone,
+        data.whatsappPhone,
         data.bloodType,
+        paymentReference,
         EVENT.feeDzd,
       ],
     );
@@ -87,7 +101,16 @@ export async function submitRegistration(_prev: SubmitState, formData: FormData)
       weddingLabel: formatWeddingDate(data.weddingYear, data.weddingMonth),
     };
   } catch (err) {
-    await client.query("ROLLBACK").catch(() => {});
+    await client.query("ROLLBACK").catch((rollbackError) => {
+      console.error("submitRegistration rollback failed", rollbackError);
+    });
+    if (isDuplicatePaymentReferenceError(err)) {
+      return {
+        status: "error",
+        errors: { paymentReference: "رقم المعاملة مستخدم بالفعل. يرجى التحقق من الرقم وإدخال رقم آخر." },
+        message: "رقم المعاملة مستخدم بالفعل",
+      };
+    }
     console.error("submitRegistration failed", err);
     return {
       status: "error",

@@ -66,9 +66,26 @@ export function ScanResultCard({ r, firstTime }: { r: Registration; firstTime: b
           <div>
             <dt className="text-muted">الهاتف</dt>
             <dd className="font-bold">
-              <a href={`https://wa.me/213${r.phone.slice(1)}`} target="_blank" rel="noopener" className="ltr inline-block font-mono text-navy hover:underline">
+              <a href={`tel:${r.phone}`} className="ltr inline-block font-mono text-navy hover:underline">
                 {r.phone}
               </a>
+            </dd>
+          </div>
+          <div>
+            <dt className="text-muted">واتساب</dt>
+            <dd className="font-bold">
+              {r.whatsapp_phone ? (
+                <a
+                  href={`https://wa.me/213${r.whatsapp_phone.slice(1)}`}
+                  target="_blank"
+                  rel="noopener"
+                  className="ltr inline-block font-mono text-navy hover:underline"
+                >
+                  {r.whatsapp_phone}
+                </a>
+              ) : (
+                <span className="text-muted">غير متوفر</span>
+              )}
             </dd>
           </div>
           <div>

@@ -7,16 +7,26 @@ export const EVENT = {
   feeDzd: 3000,
   feeLabel: "3000 دج",
   confirmNote: "يتم تأكيد التسجيل بدفع الاشتراك",
-  schedule: "الخميس والجمعة 3 - 4 ديسمبر 2025",
+  schedule: "الخميس والجمعة 3 - 4 ديسمبر 2026",
   place: "مركب القطب بالعالية",
   inquiryPhones: [
     { display: "0556 71 58 71", tel: "0556715871" },
-    { display: "0667 69 63 63", tel: "0667696363" },
+    { display: "0663 19 17 00", tel: "0663191700" },
   ],
 } as const;
 
 export const BLOOD_TYPES = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;
 export type BloodType = (typeof BLOOD_TYPES)[number];
+
+export const RESIDENCES = [
+  { value: "العطف", label: "العطف (تاجنينت)" },
+  { value: "غرداية", label: "غرداية (تغردايت)" },
+  { value: "بونورة", label: "بونورة (آت بونور)" },
+  { value: "بني يسجن", label: "بني يسجن (آت ايزجن)" },
+  { value: "مليكة", label: "مليكة (آت مليشت)" },
+  { value: "القرارة", label: "القرارة" },
+  { value: "بريان", label: "بريان" },
+] as const;
 
 export const PAYMENT_METHODS = {
   baridimob: "بريدي موب (تحويل بنكي)",

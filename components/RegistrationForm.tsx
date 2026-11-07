@@ -1,8 +1,9 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { submitRegistration, type SubmitState } from "@/app/actions";
-import { BLOOD_TYPES, EVENT, weddingOptions } from "@/lib/constants";
+import { BLOOD_TYPES, EVENT, RESIDENCES, weddingOptions } from "@/lib/constants";
 import { SuccessCard } from "./SuccessCard";
 
 const WEDDING_OPTIONS = weddingOptions();
@@ -136,15 +137,16 @@ function RegistrationFormInner({ onReset }: { onReset: () => void }) {
             </Field>
 
             <Field label="3- القصر" name="residence" error={errors.residence}>
-              <input
-                id="residence"
-                name="residence"
-                type="text"
-                required
-                placeholder="اسم القصر"
-                className="field-input"
-                aria-invalid={!!errors.residence}
-              />
+              <select id="residence" name="residence" required defaultValue="" className="field-input" aria-invalid={!!errors.residence}>
+                <option value="" disabled>
+                  اختر القصر
+                </option>
+                {RESIDENCES.map((residence) => (
+                  <option key={residence.value} value={residence.value}>
+                    {residence.label}
+                  </option>
+                ))}
+              </select>
             </Field>
 
             <Field label="4- المهنة" name="profession" error={errors.profession}>
@@ -177,7 +179,7 @@ function RegistrationFormInner({ onReset }: { onReset: () => void }) {
               </select>
             </Field>
 
-            <Field label="6- رقم الهاتف (الواتساب)" name="phone" error={errors.phone} hint="مثال: 0550123456">
+            <Field label="6- رقم الهاتف" name="phone" error={errors.phone} hint="مثال: 0550123456">
               <input
                 id="phone"
                 name="phone"
@@ -191,7 +193,21 @@ function RegistrationFormInner({ onReset }: { onReset: () => void }) {
               />
             </Field>
 
-            <Field label="7- فصيلة الدم" name="bloodType" error={errors.bloodType}>
+            <Field label="7- رقم الهاتف للواتساب" name="whatsappPhone" error={errors.whatsappPhone} hint="مثال: 0550123456">
+              <input
+                id="whatsappPhone"
+                name="whatsappPhone"
+                type="tel"
+                required
+                inputMode="numeric"
+                autoComplete="tel"
+                placeholder="05XXXXXXXX"
+                className="field-input"
+                aria-invalid={!!errors.whatsappPhone}
+              />
+            </Field>
+
+            <Field label="8- فصيلة الدم" name="bloodType" error={errors.bloodType}>
               <select id="bloodType" name="bloodType" required defaultValue="" className="field-input" aria-invalid={!!errors.bloodType}>
                 <option value="" disabled>
                   اختر فصيلة الدم
@@ -210,7 +226,7 @@ function RegistrationFormInner({ onReset }: { onReset: () => void }) {
         <section className="space-y-5">
           <h2 className="flex items-center gap-2 text-lg font-extrabold text-navy">
             <span className="grid h-8 w-8 place-items-center rounded-full bg-gold text-sm text-navy">2</span>
-            8- الدفع عبر بريدي موب
+            9- الدفع عبر بريدي موب
             <span className="mr-auto rounded-full bg-leaf-light px-3 py-1 text-sm font-bold text-leaf">{EVENT.feeLabel}</span>
           </h2>
 
@@ -248,6 +264,38 @@ function RegistrationFormInner({ onReset }: { onReset: () => void }) {
                 />
               </label>
             </Field>
+
+            <Field
+              label="رقم المعاملة"
+              name="paymentReference"
+              error={errors.paymentReference}
+              hint="أدخل رقم المعاملة الظاهر في وصل التحويل. لا يمكن استخدام الرقم أكثر من مرة."
+            >
+              <input
+                id="paymentReference"
+                name="paymentReference"
+                type="text"
+                required
+                inputMode="numeric"
+                maxLength={64}
+                dir="ltr"
+                autoComplete="off"
+                placeholder="مثال: 012261419131"
+                className="field-input text-left font-mono"
+                aria-invalid={!!errors.paymentReference}
+              />
+            </Field>
+
+            <figure className="space-y-2">
+              <Image
+                src="/transaction-number-example.png"
+                alt="مثال على مكان رقم المعاملة في وصل بريدي موب"
+                width={513}
+                height={96}
+                className="h-auto max-w-full rounded-lg border border-rose-light"
+              />
+              <figcaption className="text-xs text-muted">مثال: رقم المعاملة هو الرقم الظاهر بجانب «Identifiant de transaction».</figcaption>
+            </figure>
           </div>
         </section>
 

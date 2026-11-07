@@ -53,7 +53,13 @@ async function ReceiptViewer({ params }: { params: Promise<{ id: string }> }) {
             <h2 className="text-2xl font-extrabold text-navy">{registration.full_name}</h2>
             <p className="mt-1 text-sm text-muted">
               رقم التسجيل #{registration.id} · الهاتف{" "}
-              <span className="ltr inline-block font-mono">{registration.phone}</span> · الحالة:{" "}
+              <span className="ltr inline-block font-mono">{registration.phone}</span>
+              {registration.whatsapp_phone ? (
+                <>
+                  {" "}· واتساب <span className="ltr inline-block font-mono">{registration.whatsapp_phone}</span>
+                </>
+              ) : null}
+              {" "}· الحالة:{" "}
               <span className="font-bold text-navy">{PAYMENT_STATUS[registration.payment_status]}</span>
             </p>
           </div>

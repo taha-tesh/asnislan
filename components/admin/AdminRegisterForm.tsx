@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useId, useRef, useState } from "react";
 import { adminRegisterWalkIn, type AdminRegisterState } from "@/app/admin/actions";
-import { BLOOD_TYPES, EVENT, weddingOptions } from "@/lib/constants";
+import { BLOOD_TYPES, EVENT, RESIDENCES, weddingOptions } from "@/lib/constants";
 import { ModalPortal } from "./ModalPortal";
 
 const WEDDING_OPTIONS = weddingOptions();
@@ -148,7 +148,16 @@ export function AdminRegisterForm() {
                   </Field>
 
                   <Field label="القصر" name="residence" error={errors.residence}>
-                    <input id="residence" name="residence" type="text" required className="field-input" aria-invalid={!!errors.residence} />
+                    <select id="residence" name="residence" required defaultValue="" className="field-input" aria-invalid={!!errors.residence}>
+                      <option value="" disabled>
+                        اختر القصر
+                      </option>
+                      {RESIDENCES.map((residence) => (
+                        <option key={residence.value} value={residence.value}>
+                          {residence.label}
+                        </option>
+                      ))}
+                    </select>
                   </Field>
 
                   <Field label="المهنة" name="profession" error={errors.profession}>
@@ -168,7 +177,7 @@ export function AdminRegisterForm() {
                     </select>
                   </Field>
 
-                  <Field label="رقم الهاتف (الواتساب)" name="phone" error={errors.phone}>
+                  <Field label="رقم الهاتف" name="phone" error={errors.phone}>
                     <input
                       id="phone"
                       name="phone"
@@ -178,6 +187,20 @@ export function AdminRegisterForm() {
                       placeholder="05XXXXXXXX"
                       className="field-input"
                       aria-invalid={!!errors.phone}
+                    />
+                  </Field>
+
+                  <Field label="رقم الهاتف للواتساب" name="whatsappPhone" error={errors.whatsappPhone}>
+                    <input
+                      id="whatsappPhone"
+                      name="whatsappPhone"
+                      type="tel"
+                      required
+                      inputMode="numeric"
+                      autoComplete="tel"
+                      placeholder="05XXXXXXXX"
+                      className="field-input"
+                      aria-invalid={!!errors.whatsappPhone}
                     />
                   </Field>
 

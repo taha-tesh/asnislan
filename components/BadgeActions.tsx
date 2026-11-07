@@ -17,8 +17,17 @@ export function BadgeActions({ data }: { data: BadgeData }) {
     try {
       // Wait for the QR image (if still loading) and fonts before rasterising.
       await document.fonts?.ready;
-      const img = node.querySelector("img");
-      if (img && !img.complete) await new Promise((r) => img.addEventListener("load", r, { once: true }));
+      await Promise.all(
+        [...node.querySelectorAll("img")].map(
+          (img) =>
+            img.complete
+              ? Promise.resolve()
+              : new Promise<void>((resolve, reject) => {
+                  img.addEventListener("load", () => resolve(), { once: true });
+                  img.addEventListener("error", () => reject(new Error("Badge image failed to load")), { once: true });
+                }),
+        ),
+      );
 
       const [{ toPng }, { jsPDF }] = await Promise.all([import("html-to-image"), import("jspdf")]);
       const png = await toPng(node, {

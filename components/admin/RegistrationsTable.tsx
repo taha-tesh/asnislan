@@ -159,15 +159,27 @@ function RegistrationDetailModal({ r, onClose, onPrint }: { r: Registration; onC
             <div>
               <dt className="text-muted">الهاتف</dt>
               <dd className="font-bold">
-                <a
-                  href={`https://wa.me/213${r.phone.slice(1)}`}
-                  target="_blank"
-                  rel="noopener"
-                  className="ltr inline-block font-mono text-navy hover:underline"
-                  onClick={(e) => e.stopPropagation()}
-                >
+                <a href={`tel:${r.phone}`} className="ltr inline-block font-mono text-navy hover:underline" onClick={(e) => e.stopPropagation()}>
                   {r.phone}
                 </a>
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted">واتساب</dt>
+              <dd className="font-bold">
+                {r.whatsapp_phone ? (
+                  <a
+                    href={`https://wa.me/213${r.whatsapp_phone.slice(1)}`}
+                    target="_blank"
+                    rel="noopener"
+                    className="ltr inline-block font-mono text-navy hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {r.whatsapp_phone}
+                  </a>
+                ) : (
+                  <span className="text-muted">غير متوفر</span>
+                )}
               </dd>
             </div>
             <div>
@@ -331,6 +343,7 @@ export function RegistrationsTable({ rows }: { rows: Registration[] }) {
                     {r.created_by_admin ? <span className="mr-1 text-[10px] font-bold text-gold"> يدوي</span> : null}
                   </p>
                   <p className="ltr mt-1 font-mono text-sm text-navy">{r.phone}</p>
+                  {r.whatsapp_phone ? <p className="ltr mt-1 font-mono text-xs text-muted">واتساب: {r.whatsapp_phone}</p> : null}
                   <p className="mt-1 text-xs text-muted">{fmtDate(r.created_at)}</p>
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-1">
@@ -357,7 +370,7 @@ export function RegistrationsTable({ rows }: { rows: Registration[] }) {
                   className="h-4 w-4 accent-gold"
                 />
               </th>
-              {["الاسم الكامل", "الهاتف", "الحالة", "الحضور", "تاريخ التسجيل", "البطاقة"].map((h) => (
+              {["الاسم الكامل", "الهاتف", "واتساب", "الحالة", "الحضور", "تاريخ التسجيل", "البطاقة"].map((h) => (
                 <th key={h} className="whitespace-nowrap px-3 py-3 font-bold last:pl-4">
                   {h}
                 </th>
@@ -390,6 +403,9 @@ export function RegistrationsTable({ rows }: { rows: Registration[] }) {
                 </td>
                 <td className="px-3 py-3">
                   <span className="ltr inline-block font-mono text-navy">{r.phone}</span>
+                </td>
+                <td className="px-3 py-3">
+                  <span className="ltr inline-block font-mono text-navy">{r.whatsapp_phone ?? "—"}</span>
                 </td>
                 <td className="px-3 py-3">
                   <StatusBadge status={r.payment_status} />

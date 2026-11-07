@@ -11,7 +11,8 @@ export async function ensureSchema() {
     await client.query(`
       ALTER TABLE asnislan_registrations
         ADD COLUMN IF NOT EXISTS attended_at TIMESTAMPTZ,
-        ADD COLUMN IF NOT EXISTS created_by_admin BOOLEAN NOT NULL DEFAULT false
+        ADD COLUMN IF NOT EXISTS created_by_admin BOOLEAN NOT NULL DEFAULT false,
+        ADD COLUMN IF NOT EXISTS whatsapp_phone TEXT
     `);
 
     // Expand payment_method to allow 'cash' (admin walk-in registrations).
@@ -43,6 +44,12 @@ export async function ensureSchema() {
     await client.query(`
       CREATE INDEX IF NOT EXISTS asnislan_registrations_attended_at_idx
         ON asnislan_registrations (attended_at DESC NULLS LAST)
+    `);
+
+    await client.query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS asnislan_registrations_payment_reference_uidx
+        ON asnislan_registrations (payment_reference)
+        WHERE payment_reference IS NOT NULL AND payment_reference <> ''
     `);
 
     ensured = true;

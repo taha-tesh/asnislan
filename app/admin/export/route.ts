@@ -27,7 +27,8 @@ export async function GET(request: NextRequest) {
     القصر: r.residence,
     المهنة: r.profession,
     "تاريخ الزواج": formatWeddingDate(r.wedding_year, r.wedding_month),
-    "رقم الهاتف (الواتساب)": r.phone,
+    "رقم الهاتف": r.phone,
+    "رقم الهاتف للواتساب": r.whatsapp_phone ?? "",
     "فصيلة الدم": r.blood_type,
     "طريقة الدفع": PAYMENT_METHODS[r.payment_method],
     "حالة الدفع": PAYMENT_STATUS[r.payment_status],
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest) {
   }));
 
   const ws = XLSX.utils.json_to_sheet(data);
-  ws["!cols"] = [4, 10, 30, 12, 16, 16, 14, 16, 8, 18, 12, 10, 8, 18, 10, 18, 8, 20, 20].map((wch) => ({ wch }));
+  ws["!cols"] = [4, 10, 30, 12, 16, 16, 14, 16, 16, 8, 18, 12, 10, 8, 18, 10, 18, 8, 20, 20].map((wch) => ({ wch }));
   if (ws["!ref"]) ws["!autofilter"] = { ref: ws["!ref"] };
 
   const wb = XLSX.utils.book_new();

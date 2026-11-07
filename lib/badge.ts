@@ -36,4 +36,4 @@ export function formatBirthDate(iso: string) {
   return y && m && d ? `${d}/${m}/${y}` : iso;
 }
 
-export const WHATSAPP_GROUP_URL = process.env.NEXT_PUBLIC_WHATSAPP_GROUP_URL ?? "";
+export const WHATSAPP_GROUP_URL = "https://chat.whatsapp.com/BpnpKsjX1SXIXxIc03DUFn?mode=gi_t";

@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS asnislan_registrations (
   profession        TEXT        NOT NULL,                 -- المهنة
   wedding_month     SMALLINT    NOT NULL CHECK (wedding_month BETWEEN 1 AND 12),
   wedding_year      SMALLINT    NOT NULL CHECK (wedding_year BETWEEN 2026 AND 2027),
-  phone             TEXT        NOT NULL,                 -- رقم الهاتف (الواتساب)
+  phone             TEXT        NOT NULL,                 -- رقم الهاتف
+  whatsapp_phone    TEXT,                                 -- رقم الواتساب (nullable for legacy registrations)
   blood_type        TEXT        NOT NULL CHECK (blood_type IN ('A+','A-','B+','B-','AB+','AB-','O+','O-')),
   payment_method    TEXT        NOT NULL CHECK (payment_method IN ('baridimob','dahabia','cash')),
   payment_status    TEXT        NOT NULL DEFAULT 'pending' CHECK (payment_status IN ('pending','paid','rejected')),
@@ -38,7 +39,8 @@ ALTER TABLE asnislan_registrations ALTER COLUMN badge_token SET NOT NULL;
 -- Attendance + admin walk-in (cash)
 ALTER TABLE asnislan_registrations
   ADD COLUMN IF NOT EXISTS attended_at TIMESTAMPTZ,
-  ADD COLUMN IF NOT EXISTS created_by_admin BOOLEAN NOT NULL DEFAULT false;
+  ADD COLUMN IF NOT EXISTS created_by_admin BOOLEAN NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS whatsapp_phone TEXT;
 
 DO $$
 DECLARE cname text;
@@ -59,6 +61,9 @@ END $$;
 CREATE INDEX IF NOT EXISTS asnislan_registrations_created_at_idx ON asnislan_registrations (created_at DESC);
 CREATE INDEX IF NOT EXISTS asnislan_registrations_phone_idx      ON asnislan_registrations (phone);
 CREATE INDEX IF NOT EXISTS asnislan_registrations_attended_at_idx ON asnislan_registrations (attended_at DESC NULLS LAST);
+CREATE UNIQUE INDEX IF NOT EXISTS asnislan_registrations_payment_reference_uidx
+  ON asnislan_registrations (payment_reference)
+  WHERE payment_reference IS NOT NULL AND payment_reference <> '';
 
 -- وصل التحويل (بريدي موب) — يُرفع إلى Cloudinary؛ تُحفظ البيانات الوصفية + الرابط هنا
 CREATE TABLE IF NOT EXISTS asnislan_receipts (
