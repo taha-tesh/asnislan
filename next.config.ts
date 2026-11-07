@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   experimental: {
+    agentUpgrade: "security",
     serverActions: {
       // Receipt uploads (images / PDF) up to 5 MB + multipart overhead.
       bodySizeLimit: "6mb",
