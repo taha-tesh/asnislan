@@ -347,6 +347,9 @@ export function RegistrationsTable({ rows }: { rows: Registration[] }) {
                   <p className="mt-1 text-xs text-muted">{fmtDate(r.created_at)}</p>
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-1">
+                  <span className="rounded-full bg-navy/5 px-2.5 py-0.5 text-xs font-bold text-navy">
+                    {PAYMENT_METHODS[r.payment_method]}
+                  </span>
                   <StatusBadge status={r.payment_status} />
                   <AttendanceBadge attendedAt={r.attended_at} />
                 </div>
@@ -370,7 +373,7 @@ export function RegistrationsTable({ rows }: { rows: Registration[] }) {
                   className="h-4 w-4 accent-gold"
                 />
               </th>
-              {["الاسم الكامل", "الهاتف", "واتساب", "الحالة", "الحضور", "تاريخ التسجيل", "البطاقة"].map((h) => (
+              {["الاسم الكامل", "الهاتف", "واتساب", "طريقة الدفع", "الحالة", "الحضور", "تاريخ التسجيل", "البطاقة"].map((h) => (
                 <th key={h} className="whitespace-nowrap px-3 py-3 font-bold last:pl-4">
                   {h}
                 </th>
@@ -406,6 +409,9 @@ export function RegistrationsTable({ rows }: { rows: Registration[] }) {
                 </td>
                 <td className="px-3 py-3">
                   <span className="ltr inline-block font-mono text-navy">{r.whatsapp_phone ?? "—"}</span>
+                </td>
+                <td className="whitespace-nowrap px-3 py-3 text-xs font-bold text-navy">
+                  {PAYMENT_METHODS[r.payment_method]}
                 </td>
                 <td className="px-3 py-3">
                   <StatusBadge status={r.payment_status} />

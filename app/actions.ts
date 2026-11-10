@@ -28,12 +28,14 @@ function isDuplicatePaymentReferenceError(err: unknown) {
 
 export async function submitRegistration(_prev: SubmitState, formData: FormData): Promise<SubmitState> {
   const { data, errors } = parseRegistration(formData);
-  const parsedReference = parsePaymentReference(formData.get("paymentReference"));
+  const parsedReference = data?.paymentMethod === "baridimob"
+    ? parsePaymentReference(formData.get("paymentReference"))
+    : {};
   if (parsedReference.error) errors.paymentReference = parsedReference.error;
-  if (!data || !parsedReference.value) {
+  if (!data || (data.paymentMethod === "baridimob" && !parsedReference.value)) {
     return { status: "error", errors, message: "يرجى تصحيح الحقول المشار إليها" };
   }
-  const paymentReference = parsedReference.value;
+  const paymentReference = parsedReference.value ?? null;
 
   if (!isCloudinaryConfigured()) {
     return {
@@ -55,7 +57,7 @@ export async function submitRegistration(_prev: SubmitState, formData: FormData)
       `INSERT INTO asnislan_registrations
          (full_name, birth_date, residence, profession, wedding_month, wedding_year, phone, whatsapp_phone, blood_type,
           payment_method, payment_status, payment_reference, amount_dzd)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'baridimob','pending',$10,$11)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'pending',$11,$12)
        RETURNING id::int AS id, badge_token`,
       [
         data.fullName,
@@ -67,6 +69,7 @@ export async function submitRegistration(_prev: SubmitState, formData: FormData)
         data.phone,
         data.whatsappPhone,
         data.bloodType,
+        data.paymentMethod,
         paymentReference,
         EVENT.feeDzd,
       ],

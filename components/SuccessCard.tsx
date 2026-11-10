@@ -34,7 +34,7 @@ export function SuccessCard({ state, onReset }: { state: Extract<SubmitState, { 
         </div>
       </dl>
 
-      <p className="text-sm text-muted">سيقوم المنظمون بالتحقق من وصل التحويل وتأكيد تسجيلك عبر الواتساب.</p>
+      <p className="text-sm text-muted">سيقوم المنظمون بالتحقق من وصل التحويل وتأكيد تسجيلك.</p>
 
       <section className="space-y-3 border-t border-navy/10 pt-6 text-right">
         <h3 className="text-center text-lg font-extrabold text-navy">بطاقة المشارك</h3>

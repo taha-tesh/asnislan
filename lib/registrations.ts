@@ -125,7 +125,7 @@ export async function getStats(): Promise<Stats> {
            count(*) FILTER (WHERE payment_method = 'cash')::int AS cash,
            count(*) FILTER (WHERE attended_at IS NOT NULL)::int AS present,
            coalesce(sum(amount_dzd) FILTER (WHERE payment_status = 'paid'), 0)::int AS revenue,
-           coalesce(sum(amount_dzd) FILTER (WHERE payment_method = 'cash' AND payment_status = 'paid'), 0)::int AS cash_revenue
+           coalesce(sum(amount_dzd) FILTER (WHERE payment_method = 'cash' AND payment_status IN ('pending', 'paid')), 0)::int AS cash_revenue
     FROM asnislan_registrations
   `);
   const r = rows[0] ?? {};

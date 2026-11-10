@@ -31,7 +31,7 @@ export const RESIDENCES = [
 export const PAYMENT_METHODS = {
   baridimob: "بريدي موب (تحويل بنكي)",
   dahabia: "البطاقة الذهبية / CIB",
-  cash: "نقداً",
+  cash: "نقدا",
 } as const;
 export type PaymentMethod = keyof typeof PAYMENT_METHODS;
 

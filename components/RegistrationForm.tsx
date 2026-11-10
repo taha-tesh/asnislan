@@ -66,6 +66,7 @@ export function RegistrationForm() {
 function RegistrationFormInner({ onReset }: { onReset: () => void }) {
   const [state, action, pending] = useActionState<SubmitState, FormData>(submitRegistration, { status: "idle" });
   const [receiptName, setReceiptName] = useState<string | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<"baridimob" | "cash">("baridimob");
   const topRef = useRef<HTMLDivElement>(null);
   const birthRef = useRef<HTMLInputElement>(null);
 
@@ -94,8 +95,6 @@ function RegistrationFormInner({ onReset }: { onReset: () => void }) {
   return (
     <div ref={topRef} className="scroll-mt-4">
       <form action={action} noValidate className="space-y-8">
-        <input type="hidden" name="paymentMethod" value="baridimob" />
-
         {state.status === "error" && state.message ? (
           <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-700" role="alert">
             {state.message}
@@ -222,27 +221,71 @@ function RegistrationFormInner({ onReset }: { onReset: () => void }) {
           </div>
         </section>
 
-        {/* الدفع عبر بريدي موب فقط */}
         <section className="space-y-5">
           <h2 className="flex items-center gap-2 text-lg font-extrabold text-navy">
             <span className="grid h-8 w-8 place-items-center rounded-full bg-gold text-sm text-navy">2</span>
-            9- الدفع عبر بريدي موب
+            طريقة الدفع
             <span className="mr-auto rounded-full bg-leaf-light px-3 py-1 text-sm font-bold text-leaf">{EVENT.feeLabel}</span>
           </h2>
 
           <div className="space-y-4">
-            <div className="rounded-2xl bg-navy p-4 text-white">
-              <p className="text-sm text-white/80">الرقم الخاص بالدفع عن بعد (بريدي موب)</p>
-              <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                <span className="ltr break-all font-mono text-lg font-bold tracking-wider sm:text-xl">{EVENT.baridimobNumber}</span>
-                <CopyButton text={EVENT.baridimobNumber} />
+            <fieldset aria-invalid={!!errors.paymentMethod}>
+              {/* <legend className="field-label">اختر طريقة الدفع</legend> */}
+              <div className="grid grid-cols-2 gap-3">
+                <label className="cursor-pointer">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="baridimob"
+                    required
+                    checked={paymentMethod === "baridimob"}
+                    onChange={() => setPaymentMethod("baridimob")}
+                    className="peer sr-only"
+                  />
+                  <span className="flex min-h-12 items-center justify-center rounded-xl border border-rose-light/70 bg-white px-3 py-3 text-center text-sm font-bold text-navy shadow-sm transition hover:bg-rose-pale peer-checked:border-navy peer-checked:bg-navy peer-checked:text-white peer-focus-visible:outline-none peer-focus-visible:ring-4 peer-focus-visible:ring-rose/30">
+                    بريدي موب
+                  </span>
+                </label>
+                <label className="cursor-pointer">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="cash"
+                    required
+                    checked={paymentMethod === "cash"}
+                    onChange={() => setPaymentMethod("cash")}
+                    className="peer sr-only"
+                  />
+                  <span className="flex min-h-12 items-center justify-center rounded-xl border border-rose-light/70 bg-white px-3 py-3 text-center text-sm font-bold text-navy shadow-sm transition hover:bg-rose-pale peer-checked:border-navy peer-checked:bg-navy peer-checked:text-white peer-focus-visible:outline-none peer-focus-visible:ring-4 peer-focus-visible:ring-rose/30">
+                    نقدا
+                  </span>
+                </label>
               </div>
-              <p className="mt-3 text-xs text-white/70">
-                قم بتحويل مبلغ <span className="font-bold text-gold-light">{EVENT.feeLabel}</span> إلى الرقم أعلاه ثم أرفق صورة الوصل.
-              </p>
-            </div>
+              {errors.paymentMethod ? (
+                <p id="paymentMethod-error" className="field-error" role="alert">
+                  {errors.paymentMethod}
+                </p>
+              ) : null}
+            </fieldset>
 
-            <Field label="وصل التحويل" name="receipt" error={errors.receipt} hint="صورة (JPG/PNG) أو PDF - الحجم الأقصى 5 ميغابايت">
+            {paymentMethod === "baridimob" ? (
+              <div className="rounded-2xl bg-navy p-4 text-white">
+                <p className="text-sm text-white/80">الرقم الخاص بالدفع عن بعد (بريدي موب)</p>
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                  <span className="ltr break-all font-mono text-lg font-bold tracking-wider sm:text-xl">{EVENT.baridimobNumber}</span>
+                  <CopyButton text={EVENT.baridimobNumber} />
+                </div>
+                <p className="mt-3 text-xs text-white/70">
+                  قم بتحويل مبلغ <span className="font-bold text-gold-light">{EVENT.feeLabel}</span> إلى الرقم أعلاه ثم أرفق صورة الوصل.
+                </p>
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-gold/40 bg-gold/10 px-4 py-4 text-sm font-bold text-navy">
+                الدفع نقدا عند مكتب القطب بالحميز
+              </div>
+            )}
+
+            <Field label="وصل الدفع" name="receipt" error={errors.receipt} hint="أرفق صورة الوصل (JPG/PNG) أو PDF - الحجم الأقصى 5 ميغابايت">
               <label
                 htmlFor="receipt"
                 className={`flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed px-4 py-6 text-center transition hover:bg-rose-pale ${
@@ -265,37 +308,41 @@ function RegistrationFormInner({ onReset }: { onReset: () => void }) {
               </label>
             </Field>
 
-            <Field
-              label="رقم المعاملة"
-              name="paymentReference"
-              error={errors.paymentReference}
-              hint="أدخل رقم المعاملة الظاهر في وصل التحويل. لا يمكن استخدام الرقم أكثر من مرة."
-            >
-              <input
-                id="paymentReference"
-                name="paymentReference"
-                type="text"
-                required
-                inputMode="numeric"
-                maxLength={64}
-                dir="ltr"
-                autoComplete="off"
-                placeholder="مثال: 012261419131"
-                className="field-input text-left font-mono"
-                aria-invalid={!!errors.paymentReference}
-              />
-            </Field>
+            {paymentMethod === "baridimob" ? (
+              <>
+                <Field
+                  label="رقم المعاملة"
+                  name="paymentReference"
+                  error={errors.paymentReference}
+                  hint="أدخل رقم المعاملة الظاهر في وصل التحويل. لا يمكن استخدام الرقم أكثر من مرة."
+                >
+                  <input
+                    id="paymentReference"
+                    name="paymentReference"
+                    type="text"
+                    required
+                    inputMode="numeric"
+                    maxLength={64}
+                    dir="ltr"
+                    autoComplete="off"
+                    placeholder="مثال: 012261419131"
+                    className="field-input text-left font-mono"
+                    aria-invalid={!!errors.paymentReference}
+                  />
+                </Field>
 
-            <figure className="space-y-2">
-              <Image
-                src="/transaction-number-example.png"
-                alt="مثال على مكان رقم المعاملة في وصل بريدي موب"
-                width={513}
-                height={96}
-                className="h-auto max-w-full rounded-lg border border-rose-light"
-              />
-              <figcaption className="text-xs text-muted">مثال: رقم المعاملة هو الرقم الظاهر بجانب «Identifiant de transaction».</figcaption>
-            </figure>
+                <figure className="space-y-2">
+                  <Image
+                    src="/transaction-number-example.png"
+                    alt="مثال على مكان رقم المعاملة في وصل بريدي موب"
+                    width={513}
+                    height={96}
+                    className="h-auto max-w-full rounded-lg border border-rose-light"
+                  />
+                  <figcaption className="text-xs text-muted">مثال: رقم المعاملة هو الرقم الظاهر بجانب «Identifiant de transaction».</figcaption>
+                </figure>
+              </>
+            ) : null}
           </div>
         </section>
 

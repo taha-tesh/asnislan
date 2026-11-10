@@ -5,7 +5,6 @@ import {
   RECEIPT_MIME_TYPES,
   isWeddingDateAllowed,
   type BloodType,
-  type PaymentMethod,
 } from "./constants";
 
 export type FieldErrors = Partial<Record<string, string>>;
@@ -20,6 +19,7 @@ export type RegistrationInput = {
   phone: string;
   whatsappPhone: string;
   bloodType: BloodType;
+  paymentMethod: "baridimob" | "cash";
 };
 
 const str = (v: FormDataEntryValue | null) => (typeof v === "string" ? v.trim() : "");
@@ -93,16 +93,27 @@ export function parseRegistration(fd: FormData): { data?: RegistrationInput; err
   const bloodType = str(fd.get("bloodType")) as BloodType;
   if (!BLOOD_TYPES.includes(bloodType)) errors.bloodType = "يرجى اختيار فصيلة الدم";
 
-  // Payment is BaridiMob-only; ignore any other value from the client.
-  const paymentMethod = str(fd.get("paymentMethod")) as PaymentMethod;
-  if (paymentMethod && paymentMethod !== "baridimob") {
-    errors.paymentMethod = "الدفع متاح عبر بريدي موب فقط";
+  const paymentMethodValue = str(fd.get("paymentMethod"));
+  const paymentMethod = paymentMethodValue === "cash" ? "cash" : "baridimob";
+  if (paymentMethodValue !== "baridimob" && paymentMethodValue !== "cash") {
+    errors.paymentMethod = "يرجى اختيار طريقة دفع صحيحة";
   }
 
   if (Object.keys(errors).length) return { errors };
   return {
     errors,
-    data: { fullName, birthDate, residence, profession, weddingYear, weddingMonth, phone, whatsappPhone, bloodType },
+    data: {
+      fullName,
+      birthDate,
+      residence,
+      profession,
+      weddingYear,
+      weddingMonth,
+      phone,
+      whatsappPhone,
+      bloodType,
+      paymentMethod,
+    },
   };
 }
 
