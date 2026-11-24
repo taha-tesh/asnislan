@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { EVENT } from "@/lib/constants";
 
 export function SiteFooter() {
@@ -19,11 +18,6 @@ export function SiteFooter() {
           </span>
         ))}
       </p>
-      {/* <p className="mt-2">
-        <Link href="/admin" className="text-muted/70 hover:text-navy underline-offset-4 hover:underline">
-          لوحة الإدارة
-        </Link>
-      </p> */}
     </footer>
   );
 }

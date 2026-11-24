@@ -24,6 +24,17 @@ export type RegistrationInput = {
 
 const str = (v: FormDataEntryValue | null) => (typeof v === "string" ? v.trim() : "");
 
+/** Arabic letters, optional diacritics, and spaces. */
+const ARABIC_NAME = /^(?=.*[\u0621-\u064A])[\u0621-\u064A\u064B-\u0652\u0670\u0671\s]+$/;
+
+export function isArabicName(value: string) {
+  return ARABIC_NAME.test(value);
+}
+
+export function keepArabicName(value: string) {
+  return value.replace(/[^\u0621-\u064A\u064B-\u0652\u0670\u0671\s]/g, "");
+}
+
 /** Normalise Arabic-Indic digits to ASCII so phone numbers validate. */
 export function normalizeDigits(s: string) {
   return s.replace(/[\u0660-\u0669]/g, (d) => String(d.charCodeAt(0) - 0x0660))
@@ -54,6 +65,7 @@ export function parseRegistration(fd: FormData): { data?: RegistrationInput; err
   const fullName = str(fd.get("fullName")).replace(/\s+/g, " ");
   if (fullName.length < 5) errors.fullName = "يرجى إدخال الاسم الكامل مع اسم الجد";
   else if (fullName.length > 120) errors.fullName = "الاسم طويل جداً";
+  else if (!isArabicName(fullName)) errors.fullName = "يرجى كتابة الاسم بالعربية فقط";
 
   const birthDate = str(fd.get("birthDate"));
   if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) errors.birthDate = "يرجى إدخال تاريخ الميلاد";

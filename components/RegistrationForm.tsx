@@ -4,6 +4,7 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { submitRegistration, type SubmitState } from "@/app/actions";
 import { BLOOD_TYPES, EVENT, RESIDENCES, weddingOptions } from "@/lib/constants";
+import { keepArabicName } from "@/lib/validation";
 import { SuccessCard } from "./SuccessCard";
 
 const WEDDING_OPTIONS = weddingOptions();
@@ -108,16 +109,24 @@ function RegistrationFormInner({ onReset }: { onReset: () => void }) {
             المعلومات الشخصية
           </h2>
 
-          <Field label="1- الاسم الكامل (مع اسم الجد)" name="fullName" error={errors.fullName}>
+          <Field label="1- الاسم الكامل بالعربية (مع اسم الجد)" name="fullName" error={errors.fullName}>
             <input
               id="fullName"
               name="fullName"
               type="text"
               required
+              lang="ar"
+              dir="rtl"
               autoComplete="name"
               placeholder="مثال: محمد بن أحمد بن علي"
+              pattern="[\u0621-\u064A\u064B-\u0652\s]+"
+              title="اكتب الاسم بالعربية فقط"
               className="field-input"
               aria-invalid={!!errors.fullName}
+              onChange={(e) => {
+                const cleaned = keepArabicName(e.target.value);
+                if (cleaned !== e.target.value) e.target.value = cleaned;
+              }}
             />
           </Field>
 

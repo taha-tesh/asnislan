@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useId, useRef, useState } from "react";
 import { adminRegisterWalkIn, type AdminRegisterState } from "@/app/admin/actions";
 import { BLOOD_TYPES, EVENT, RESIDENCES, weddingOptions } from "@/lib/constants";
+import { keepArabicName } from "@/lib/validation";
 import { ModalPortal } from "./ModalPortal";
 
 const WEDDING_OPTIONS = weddingOptions();
@@ -130,7 +131,23 @@ export function AdminRegisterForm() {
 
                   <div className="sm:col-span-2">
                     <Field label="الاسم الكامل (مع اسم الجد)" name="fullName" error={errors.fullName}>
-                      <input id="fullName" name="fullName" type="text" required className="field-input" aria-invalid={!!errors.fullName} />
+                      <input
+                        id="fullName"
+                        name="fullName"
+                        type="text"
+                        required
+                        lang="ar"
+                        dir="rtl"
+                        placeholder="مثال: محمد بن أحمد بن علي"
+                        pattern="[\u0621-\u064A\u064B-\u0652\s]+"
+                        title="اكتب الاسم بالعربية فقط"
+                        className="field-input"
+                        aria-invalid={!!errors.fullName}
+                        onChange={(e) => {
+                          const cleaned = keepArabicName(e.target.value);
+                          if (cleaned !== e.target.value) e.target.value = cleaned;
+                        }}
+                      />
                     </Field>
                   </div>
 
